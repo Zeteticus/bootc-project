@@ -6,29 +6,6 @@
  clients can pull updates across the network via https. The startup script
  is in registry-data.
 
-bootc-project/
-├── auth.json
-├── bootc-buildiso
-│   ├── auth.json
-│   ├── buildiso.sh
-│   ├── config.toml
-│   └── output
-│       ├── bootiso
-│       └── manifest-iso.json
-├── README.md
-├── registry-certs
-│   ├── domain.crt
-│   └── domain.key
-├── registry-data
-│   ├── auth.json
-│   └── start-registry.sh
-└── rhel9-bootc
-    ├── auth.json
-    ├── build-bootc-scapped.sh
-    ├── config.toml
-    ├── Containerfile
-    └── LICENSE
-
 --Build bootc image
 
 To build the rhel9 SCAP'd bootc image, do this:
