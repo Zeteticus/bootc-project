@@ -1,10 +1,10 @@
 
-## This shows how to create a scapped rhel9 bootc image, as well as
-## creating an installation ISO to install to bare metal, or to a VM.
-## 
-## There are also instructions for setting up a container repository from which 
-## clients can pull updates across the network via https. The startup script
-## is in registry-data.
+ This shows how to create a scapped rhel9 bootc image, as well as
+ creating an installation ISO to install to bare metal, or to a VM.
+ 
+ There are also instructions for setting up a container repository from which 
+ clients can pull updates across the network via https. The startup script
+ is in registry-data.
 
 bootc-project/
 ├── auth.json
