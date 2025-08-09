@@ -1,0 +1,40 @@
+# bootc-image-builder configuration file
+# Embeds kickstart partitioning commands for advanced LVM setup
+
+[customizations.installer.kickstart]
+contents = """
+part biosboot --fstype=biosboot --size=1
+part /boot --fstype=xfs --size=750
+part /boot/efi --fstype=efi --size=750
+part pv.01 --fstype="lvmpv" --size=501375
+volgroup rhel --pesize=4096 pv.01
+logvol / --fstype="xfs" --size=80000 --name=root --vgname=rhel
+logvol /home --fstype="xfs" --size=5000 --name=home --vgname=rhel --grow
+logvol swap --fstype="swap" --size=8192 --name=swap --vgname=rhel
+logvol /tmp --fstype="xfs" --size=15000 --name=tmp --vgname=rhel --fsoptions="nodev,nosuid,noexec"
+logvol /var/log --fstype="xfs" --size=15000 --name=var_log --vgname=rhel
+logvol /var/log/audit --fstype="xfs" --size=15000 --name=var_log_audit --vgname=rhel
+logvol /var --fstype="xfs" --size=15000 --name=var --vgname=rhel
+logvol /var/tmp --fstype="xfs" --size=2048 --name=var_tmp --vgname=rhel --fsoptions="nodev,nosuid,noexec"
+logvol /opt --fstype="xfs" --size=15000 --name=opt --vgname=rhel
+
+rootpw --plaintext password
+
+# Additional kickstart commands for non-interactive installation
+text --non-interactive
+zerombr
+clearpart --all --initlabel --disklabel=gpt
+network --bootproto=dhcp --device=link --activate --onboot=on
+%post
+# Post-installation script
+echo "Custom post-installation configuration"
+
+# Add custom users, configurations, etc.
+useradd -m -G wheel ascensus
+echo "ascensus:password" | chpasswd
+
+# Custom service configurations
+systemctl enable sshd
+systemctl enable chronyd
+%end
+"""
