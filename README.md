@@ -1,41 +1,138 @@
+# RHEL9 Bootc SCAP Hardened Image Builder
 
- This shows how to create a scapped rhel9 bootc image, as well as
- creating an installation ISO to install to bare metal, or to a VM.
- 
- There are also instructions for setting up a container repository from which 
- clients can pull updates across the network via https. The startup script
- is in registry-data.
+A comprehensive solution for creating SCAP-hardened RHEL9 bootc container images with installation ISO generation and network-based update distribution capabilities.
 
---Build bootc image
+## Overview
 
-To build the rhel9 SCAP'd bootc image, do this:
+This project provides tooling to:
+- Build SCAP-hardened RHEL9 bootc container images
+- Generate installation ISOs for bare metal and VM deployment
+- Set up container registries for network-based system updates via HTTPS
 
+## Project Structure
+
+```
+.
+├── auth.json                      # Global authentication configuration
+├── bootc-buildiso/
+│   ├── auth.json                  # ISO build authentication
+│   ├── buildiso.sh                # ISO generation script
+│   ├── config.toml                # ISO build configuration
+│   └── output/
+│       ├── bootiso                # Generated bootable ISO output
+│       └── manifest-iso.json      # ISO build manifest
+├── README.md                      # This documentation
+├── registry-certs/
+│   ├── domain.crt                 # Registry SSL certificate
+│   └── domain.key                 # Registry SSL private key
+├── registry-data/
+│   ├── auth.json                  # Registry authentication
+│   └── start-registry.sh          # Registry startup script
+└── rhel9-bootc/
+    ├── auth.json                  # Bootc build authentication
+    ├── build-bootc-scapped.sh     # Main build script for bootc image
+    ├── config.toml                # Bootc build configuration
+    ├── Containerfile              # Container build definition
+    └── LICENSE                    # License file
+```
+
+## Prerequisites
+
+- Podman installed and configured
+- Red Hat subscription with registry.redhat.io access
+- Sufficient disk space for image builds
+- Root or appropriate container privileges
+
+## Quick Start
+
+### 1. Build SCAP-Hardened Bootc Image
+
+Navigate to the build directory and execute the build script:
+
+```bash
 cd rhel9-bootc
-
 ./build-bootc-scapped.sh
+```
 
-When the build finishes, you can check it with "podman images."
+**Verification:**
+After the build completes, verify the image creation:
 
-You should see an image called "localhost/rhel9-bootc-scapped-v1.2."
+```bash
+podman images
+```
 
+You should see an image named: `localhost/rhel9-bootc-scapped-v1.2`
 
---Setup Registry
+### 2. Generate Installation ISO
 
+Create a bootable ISO from your built image:
 
+```bash
+cd ../bootc-buildiso
+```
 
+**Important:** Before running the ISO build script, ensure the image version in `buildiso.sh` matches the version displayed by `podman images`.
 
-
-
-
---Build Installation ISO of bootc image
-
-Now, to build an ISO from this image for installing on a system, do this:
-
-cd ../ bootc-buildiso
-
-Make sure the version of the image in the buildiso.sh script matches
-the version of the image you see with "podman images."
-
+```bash
 ./buildiso.sh
+```
 
-You may need to do "podman login registry.redhat.io" with your credentials.
+**Authentication Note:** You may need to authenticate with Red Hat's registry:
+
+```bash
+podman login registry.redhat.io
+```
+
+Enter your Red Hat credentials when prompted.
+
+### 3. Set Up Container Registry
+
+For network-based updates, configure the container registry using the provided startup scripts in the `registry-data` directory.
+
+*[Detailed registry setup instructions to be added]*
+
+## Image Details
+
+- **Base:** RHEL9
+- **Security Profile:** SCAP-hardened configuration
+- **Container Technology:** bootc (boot container)
+- **Version:** v1.2
+
+## Use Cases
+
+- **Bare Metal Installation:** Deploy hardened RHEL9 systems on physical hardware
+- **Virtual Machine Deployment:** Install in virtualized environments
+- **Network Updates:** Maintain systems via containerized update distribution
+
+## Troubleshooting
+
+### Common Issues
+
+**Build Failures:**
+- Ensure Red Hat subscription is active
+- Verify network connectivity to registry.redhat.io
+- Check available disk space
+
+**ISO Generation Problems:**
+- Confirm image version matches in buildiso.sh
+- Verify podman authentication status
+
+## Security Considerations
+
+This image incorporates SCAP (Security Content Automation Protocol) hardening profiles. Review the security configurations before deployment in production environments.
+
+## Contributing
+
+*[Contribution guidelines to be added]*
+
+## License
+
+*[License information to be added]*
+
+## Support
+
+*[Support contact information to be added]*
+
+---
+
+**Note:** This documentation is subject to updates and improvements. Check back for additional details and enhanced instructions.
