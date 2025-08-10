@@ -63,7 +63,24 @@ podman images
 
 You should see an image named: `localhost/rhel9-bootc-scapped-v1.2`
 
-### 2. Generate Installation ISO
+### 2. Set Up Container Registry
+
+For network-based updates, configure the container registry using the provided startup scripts in the `registry-data` directory.
+
+```bash
+cd registry-data
+./start-registry.sh
+```
+
+Then, push the scapped imaged like this:
+```
+podman push localhost/rhel9-bootc-scapped-v1.2:latest localhost:5000/myregistry/rhel9-bootc-scapped-v1.2:latest
+```
+Check it with:
+```
+curl -k https://192.168.1.18:5000/v2/_catalog
+```
+### 3. Generate Installation ISO
 
 Create a bootable ISO from your built image:
 
@@ -84,12 +101,6 @@ podman login registry.redhat.io
 ```
 
 Enter your Red Hat credentials when prompted.
-
-### 3. Set Up Container Registry
-
-For network-based updates, configure the container registry using the provided startup scripts in the `registry-data` directory.
-
-*[Detailed registry setup instructions to be added]*
 
 ## Image Details
 
