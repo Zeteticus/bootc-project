@@ -9368,7 +9368,7 @@
         {
           "type": "org.osbuild.mkfs.fat",
           "options": {
-            "volid": "4009da36"
+            "volid": "6a1c1a71"
           },
           "devices": {
             "device": {
@@ -9455,8 +9455,8 @@
               "type": "org.osbuild.containers-storage",
               "origin": "org.osbuild.source",
               "references": {
-                "sha256:4fb7bdf117ba3bca36f75b28ed3e2bafc5abc35ad110bfd1daeb10e340a320cc": {
-                  "name": "localhost:5000/myregistry/rhel9-bootc-scapped-v1.2:latest"
+                "sha256:cce7550d322c589e4e0b44c6a15050069e0f589d7e58147582dc2c90e0628cf2": {
+                  "name": "localhost:5000/production-registry/rhel9-bootc-scapped-v1.3"
                 }
               }
             }
@@ -9484,7 +9484,7 @@
               {
                 "erroronfail": true,
                 "commands": [
-                  "bootc switch --mutate-in-place --transport registry localhost:5000/myregistry/rhel9-bootc-scapped-v1.2:latest",
+                  "bootc switch --mutate-in-place --transport registry localhost:5000/production-registry/rhel9-bootc-scapped-v1.3",
                   "# used during automatic image testing as finished marker",
                   "if [ -c /dev/ttyS0 ]; then",
                   "  # continue on errors here, because we used to omit --erroronfail",
@@ -9567,7 +9567,7 @@
   "sources": {
     "org.osbuild.containers-storage": {
       "items": {
-        "sha256:4fb7bdf117ba3bca36f75b28ed3e2bafc5abc35ad110bfd1daeb10e340a320cc": {}
+        "sha256:cce7550d322c589e4e0b44c6a15050069e0f589d7e58147582dc2c90e0628cf2": {}
       }
     },
     "org.osbuild.inline": {

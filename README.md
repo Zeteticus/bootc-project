@@ -78,7 +78,7 @@ podman push localhost/rhel9-bootc-scapped-v1.2:latest localhost:5000/myregistry/
 ```
 Check it with:
 ```
-curl -k https://192.168.1.18:5000/v2/_catalog
+curl -k http://192.168.1.18:5000/v2/_catalog
 ```
 ### 3. Generate Installation ISO
 
