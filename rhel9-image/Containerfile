@@ -1,8 +1,8 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
 # Set labels for the image
-LABEL name="rhel9-bootc-stig" \
-      version="1.1" \
+LABEL name="rhel9-bootc-stig-v1.4" \
+      version="1.4" \
       description="RHEL 9 bootc image with STIG security hardening" \
       maintainer="mark.dotson.5@us.af.mil"
 
@@ -321,8 +321,8 @@ RUN { \
 RUN chmod +x /etc/cron.daily/aide-check
 
 # Configure umask for STIG compliance
-RUN echo "umask 027" >> /etc/bashrc && \
-    echo "umask 027" >> /etc/profile
+RUN echo "umask 077" >> /etc/bashrc && \
+    echo "umask 077" >> /etc/profile
 
 # Set proper file permissions for STIG compliance
 RUN chmod 600 /etc/ssh/*_key 2>/dev/null || true && \
@@ -387,4 +387,4 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 # Add metadata for bootc
-LABEL io.containers.bootc.version="1.0"
+LABEL io.containers.bootc.version="1.4"

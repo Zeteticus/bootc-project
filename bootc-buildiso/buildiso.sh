@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo podman pull localhost:5000/production-registry/rhel9-bootc-scapped-v1.3
+sudo podman pull localhost:5000/rhel9-bootc-scapped-v1.4
 
 sudo podman run --rm -it \
 	--privileged --security-opt label=type:unconfined_t \
@@ -9,4 +9,4 @@ sudo podman run --rm -it \
 	-v ~/bootc-project/bootc-buildiso/config.toml:/config.toml registry.redhat.io/rhel9/bootc-image-builder \
 	--type iso \
 	--config /config.toml \
-	localhost:5000/production-registry/rhel9-bootc-scapped-v1.3
+	localhost:5000/rhel9-bootc-scapped-v1.3

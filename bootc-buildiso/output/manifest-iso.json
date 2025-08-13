@@ -5599,22 +5599,6 @@
                   }
                 },
                 {
-                  "id": "sha256:d46d62bcf865df245f3538ab121e3235ee06beab7f4f463b3518896612d631e9",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:13a6d7eac2d0b0ac5ef9139aef1bf5d5c4b128e1c30e9c512665bb8c20cb8f6f",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
                   "id": "sha256:2da8ea3db88947c4786f024b9701ec814b34d148e2cc7489d5731caf339dfa66",
                   "options": {
                     "metadata": {
@@ -5648,22 +5632,6 @@
                 },
                 {
                   "id": "sha256:a6c20b6694154a918025a55b2a70496aa3fb115018af69cf3fea52c4453e7cc4",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:7a5f77d4abc6c17e12bc42d35a010b2734bbb761a4f858846193e8502f2ec27d",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:7512a4e0ba6c52e910a68832eb73b40d1bac83adc25e531d5db9f16a0ff49820",
                   "options": {
                     "metadata": {
                       "rpm.check_gpg": true
@@ -5976,6 +5944,38 @@
                 },
                 {
                   "id": "sha256:efb40f222201e7fc06a546a082f3049ef232e0297cafe5ea126fa99a3accba6e",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:d6ee97b3fd5226ecf3ee057aebbf395b5615a27d0f594b3fd1c1295d9cacdbb6",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:7dcfbadfbb457aeccb12bfa6fab11054465dc0b5d8baf847aacbb968bc0a75f2",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:282dc89136f3971077100f1005749dadaa1cafa6e7f42b5e55261901f71ae944",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:b747970ce23ecc90439e695521c2fee99ce8b0492a48af0c8f919a083a5bc173",
                   "options": {
                     "metadata": {
                       "rpm.check_gpg": true
@@ -8927,38 +8927,6 @@
                   }
                 },
                 {
-                  "id": "sha256:7f7905204999fd85e920d31318e29283e60d8cf9c036eddf52834b3f3bd46483",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:23725675f9772ff008cf03faa586d986fd30797edb91e41dc78983765c66fa01",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:7edc719ed423632a3d73a02747c6b0330ba4ba3ffc4209501df520e54f7a9604",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
-                  "id": "sha256:7668ba7aded9a73412ef84efe0daf5f4e44a1c3746d417f9e6c98a95373b40e1",
-                  "options": {
-                    "metadata": {
-                      "rpm.check_gpg": true
-                    }
-                  }
-                },
-                {
                   "id": "sha256:47a7eaa890012f8de224fa8e1f553030200f38ef7c5aab9b236d34cc4f0e1deb",
                   "options": {
                     "metadata": {
@@ -9125,6 +9093,38 @@
                       "rpm.check_gpg": true
                     }
                   }
+                },
+                {
+                  "id": "sha256:f02930f7b082c289cf7622a9124ea6f5b2eaf856b7592055bea3fdc41425595c",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:4cf35d5085d891ef727e8fae3ad791c57a5c4466a1e4365beb97439b36f431e3",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:4603ea3a7dbe1a60064f7b19eeef65592b01936c8fb9a6ce348c8350a7d8ee1d",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
+                },
+                {
+                  "id": "sha256:265cf76ff670bff05f9ec9e011e3107c779bfa4b982878e5808b0b71979e03bf",
+                  "options": {
+                    "metadata": {
+                      "rpm.check_gpg": true
+                    }
+                  }
                 }
               ]
             }
@@ -9202,7 +9202,7 @@
           "type": "org.osbuild.dracut",
           "options": {
             "kernel": [
-              "5.14.0-570.32.1.el9_6.x86_64"
+              "5.14.0-570.33.2.el9_6.x86_64"
             ],
             "add_modules": [
               "pollcdrom",
@@ -9289,11 +9289,11 @@
           "options": {
             "paths": [
               {
-                "from": "input://tree/boot/vmlinuz-5.14.0-570.32.1.el9_6.x86_64",
+                "from": "input://tree/boot/vmlinuz-5.14.0-570.33.2.el9_6.x86_64",
                 "to": "tree:///images/pxeboot/vmlinuz"
               },
               {
-                "from": "input://tree/boot/initramfs-5.14.0-570.32.1.el9_6.x86_64.img",
+                "from": "input://tree/boot/initramfs-5.14.0-570.33.2.el9_6.x86_64.img",
                 "to": "tree:///images/pxeboot/initrd.img"
               }
             ]
@@ -9368,7 +9368,7 @@
         {
           "type": "org.osbuild.mkfs.fat",
           "options": {
-            "volid": "6a1c1a71"
+            "volid": "c4908244"
           },
           "devices": {
             "device": {
@@ -9455,8 +9455,8 @@
               "type": "org.osbuild.containers-storage",
               "origin": "org.osbuild.source",
               "references": {
-                "sha256:cce7550d322c589e4e0b44c6a15050069e0f589d7e58147582dc2c90e0628cf2": {
-                  "name": "localhost:5000/production-registry/rhel9-bootc-scapped-v1.3"
+                "sha256:0aaf3034c80b11b3ea34f442a402d73c7bf6dfc65a69661df8685186fb551524": {
+                  "name": "localhost:5000/rhel9-bootc-scapped-v1.3"
                 }
               }
             }
@@ -9484,7 +9484,7 @@
               {
                 "erroronfail": true,
                 "commands": [
-                  "bootc switch --mutate-in-place --transport registry localhost:5000/production-registry/rhel9-bootc-scapped-v1.3",
+                  "bootc switch --mutate-in-place --transport registry localhost:5000/rhel9-bootc-scapped-v1.3",
                   "# used during automatic image testing as finished marker",
                   "if [ -c /dev/ttyS0 ]; then",
                   "  # continue on errors here, because we used to omit --erroronfail",
@@ -9567,7 +9567,7 @@
   "sources": {
     "org.osbuild.containers-storage": {
       "items": {
-        "sha256:cce7550d322c589e4e0b44c6a15050069e0f589d7e58147582dc2c90e0628cf2": {}
+        "sha256:0aaf3034c80b11b3ea34f442a402d73c7bf6dfc65a69661df8685186fb551524": {}
       }
     },
     "org.osbuild.inline": {
@@ -9832,10 +9832,6 @@
           "path": "Packages/p/poppler-glib-21.01.0-21.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
-        "sha256:13a6d7eac2d0b0ac5ef9139aef1bf5d5c4b128e1c30e9c512665bb8c20cb8f6f": {
-          "path": "Packages/p/passt-selinux-0^20250217.ga1e48a0-9.el9_6.noarch.rpm",
-          "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
         "sha256:14524aeca77e31530a8f2cbe2564f073855f18a5fced7e0a4c1d0af5413fd4fd": {
           "path": "Packages/p/python3-mako-1.1.4-6.el9.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -10040,10 +10036,6 @@
           "path": "Packages/w/wpa_supplicant-2.11-2.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
-        "sha256:23725675f9772ff008cf03faa586d986fd30797edb91e41dc78983765c66fa01": {
-          "path": "Packages/k/kernel-core-5.14.0-570.32.1.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-baseos-rpms"
-        },
         "sha256:2398fd9dfd46af86ab11d6273559ce440eaf6841e3ff28447d3a5c26f6760cdb": {
           "path": "Packages/l/libsndfile-1.0.31-9.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -10076,6 +10068,10 @@
           "path": "Packages/d/dracut-057-88.git20250311.el9_6.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
+        "sha256:265cf76ff670bff05f9ec9e011e3107c779bfa4b982878e5808b0b71979e03bf": {
+          "path": "Packages/k/kernel-modules-core-5.14.0-570.33.2.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-baseos-rpms"
+        },
         "sha256:26f02c29b38b6d5e3af9af0f9e5abd8f14ad93b07391725e1a8c1dcc5b5e9a71": {
           "path": "Packages/p/prefixdevname-0.1.0-8.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
@@ -10103,6 +10099,10 @@
         "sha256:2824678f73a2c64345057ae1df69056ce136ed5e9b9ba80279f26066ab4feb86": {
           "path": "Packages/p/python3-cloud-what-1.29.45.1-1.el9_6.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
+        },
+        "sha256:282dc89136f3971077100f1005749dadaa1cafa6e7f42b5e55261901f71ae944": {
+          "path": "Packages/w/webkit2gtk3-2.48.5-1.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
         "sha256:287d11706d44a53455ed8ac62faab4c4a0b8c0fa5e367adf122c7a76c6ddbbb8": {
           "path": "Packages/o/openssl-libs-3.2.2-6.el9_5.1.x86_64.rpm",
@@ -10512,6 +10512,10 @@
           "path": "Packages/g/gnome-control-center-filesystem-40.0-38.el9.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
+        "sha256:4603ea3a7dbe1a60064f7b19eeef65592b01936c8fb9a6ce348c8350a7d8ee1d": {
+          "path": "Packages/k/kernel-modules-5.14.0-570.33.2.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-baseos-rpms"
+        },
         "sha256:4674b4ee6150c8f8be01a028a471c209a6be7c0cf78e9450cf28fb01eaed9ea2": {
           "path": "Packages/f/fuse3-3.10.2-9.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -10627,6 +10631,10 @@
         "sha256:4ca12009c859b388baa00298fd83de948cf18e72782dfef3734cdbf274510da7": {
           "path": "Packages/p/python3-gobject-3.40.1-6.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
+        },
+        "sha256:4cf35d5085d891ef727e8fae3ad791c57a5c4466a1e4365beb97439b36f431e3": {
+          "path": "Packages/k/kernel-core-5.14.0-570.33.2.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
         "sha256:4d47f3ba0ce454be5d781e968cfe15f01f393e68a47c415f35c0d88358ab4af9": {
           "path": "Packages/p/perl-Text-ParseWords-3.30-460.el9.noarch.rpm",
@@ -11096,10 +11104,6 @@
           "path": "Packages/i/initscripts-10.11.8-4.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
-        "sha256:7512a4e0ba6c52e910a68832eb73b40d1bac83adc25e531d5db9f16a0ff49820": {
-          "path": "Packages/w/webkit2gtk3-jsc-2.48.3-1.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
         "sha256:75493e2cd84a3317a4962a7dcd9121450513c011c592f40274147ebe1667888b": {
           "path": "Packages/l/libwayland-client-1.21.0-1.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -11135,10 +11139,6 @@
         "sha256:762751146305f9aea53b74a21495a610e7bdde956fa3246565d265b1128b56a8": {
           "path": "Packages/p/perl-Socket-2.031-4.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
-        "sha256:7668ba7aded9a73412ef84efe0daf5f4e44a1c3746d417f9e6c98a95373b40e1": {
-          "path": "Packages/k/kernel-modules-core-5.14.0-570.32.1.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
         "sha256:76a97fd7c95463aaf5147dc911cccc91d1abceba3a6913ce98435e42987f037b": {
           "path": "Packages/l/libogg-1.3.4-6.el9.x86_64.rpm",
@@ -11190,10 +11190,6 @@
         },
         "sha256:7a3c84621600a1468e8a3d5f70f3b65b37769e7bcbecae6b5a92ef4471d49e5a": {
           "path": "Packages/u/udisks2-2.9.4-11.el9.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
-        "sha256:7a5f77d4abc6c17e12bc42d35a010b2734bbb761a4f858846193e8502f2ec27d": {
-          "path": "Packages/w/webkit2gtk3-2.48.3-1.el9_6.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
         "sha256:7a6305278faf25731f723d72b74140e408163a51b5b201f76cfbc3fff8c34331": {
@@ -11260,6 +11256,10 @@
           "path": "Packages/p/python3-policycoreutils-3.6-2.1.el9.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
+        "sha256:7dcfbadfbb457aeccb12bfa6fab11054465dc0b5d8baf847aacbb968bc0a75f2": {
+          "path": "Packages/p/passt-selinux-0^20250217.ga1e48a0-10.el9_6.noarch.rpm",
+          "mirror": "rhel-9-for-x86_64-appstream-rpms"
+        },
         "sha256:7e29a60661b72bd7dc76bd7f03c0cce5661365ce7a9e7fa52ba2bce6270f51c8": {
           "path": "Packages/a/adwaita-cursor-theme-40.1.1-3.el9.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -11268,17 +11268,9 @@
           "path": "Packages/p/perl-IPC-Open3-1.21-481.1.el9_6.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
-        "sha256:7edc719ed423632a3d73a02747c6b0330ba4ba3ffc4209501df520e54f7a9604": {
-          "path": "Packages/k/kernel-modules-5.14.0-570.32.1.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-baseos-rpms"
-        },
         "sha256:7f1cf0ca9437dfa2af42dc201b90cd5b70c3c530623d6d3f0624d81faabf9e3f": {
           "path": "Packages/o/ostree-libs-2025.1-1.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
-        "sha256:7f7905204999fd85e920d31318e29283e60d8cf9c036eddf52834b3f3bd46483": {
-          "path": "Packages/k/kernel-5.14.0-570.32.1.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
         "sha256:805be14015d42638c752ec73246fc30c43e584bcceb7f2b66eb8ae45e1442bfc": {
           "path": "Packages/m/mesa-libGL-24.2.8-2.el9_6.x86_64.rpm",
@@ -12060,6 +12052,10 @@
           "path": "Packages/n/nss-softokn-3.101.0-10.el9_2.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
+        "sha256:b747970ce23ecc90439e695521c2fee99ce8b0492a48af0c8f919a083a5bc173": {
+          "path": "Packages/w/webkit2gtk3-jsc-2.48.5-1.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-appstream-rpms"
+        },
         "sha256:b7bbfe293149b27e0d56f11a2feb65cf6f0d6736671b0bdc16cad5e10f35fd2a": {
           "path": "Packages/s/satyr-0.38-3.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
@@ -12448,10 +12444,6 @@
           "path": "Packages/g/gmp-6.2.0-13.el9.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
-        "sha256:d46d62bcf865df245f3538ab121e3235ee06beab7f4f463b3518896612d631e9": {
-          "path": "Packages/p/passt-0^20250217.ga1e48a0-9.el9_6.x86_64.rpm",
-          "mirror": "rhel-9-for-x86_64-appstream-rpms"
-        },
         "sha256:d4b490f97fec6df68d467e74eeac7f26210757973175d344d989804e4f1a3629": {
           "path": "Packages/f/fonts-filesystem-2.0.5-7.el9.1.noarch.rpm",
           "mirror": "rhel-9-for-x86_64-baseos-rpms"
@@ -12478,6 +12470,10 @@
         },
         "sha256:d68c6ccdc801fd671c15fab7c9ebf8cf70890502ee75c106bb70cedb5c975c9a": {
           "path": "Packages/l/lame-libs-3.100-12.el9.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-appstream-rpms"
+        },
+        "sha256:d6ee97b3fd5226ecf3ee057aebbf395b5615a27d0f594b3fd1c1295d9cacdbb6": {
+          "path": "Packages/p/passt-0^20250217.ga1e48a0-10.el9_6.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
         },
         "sha256:d71686086de04a168e8caf1044aadf24c37a7e2c2541a5ed1155fcc0c06ac01e": {
@@ -12827,6 +12823,10 @@
         "sha256:efb40f222201e7fc06a546a082f3049ef232e0297cafe5ea126fa99a3accba6e": {
           "path": "Packages/m/mutter-40.9-25.el9_6.1.x86_64.rpm",
           "mirror": "rhel-9-for-x86_64-appstream-rpms"
+        },
+        "sha256:f02930f7b082c289cf7622a9124ea6f5b2eaf856b7592055bea3fdc41425595c": {
+          "path": "Packages/k/kernel-5.14.0-570.33.2.el9_6.x86_64.rpm",
+          "mirror": "rhel-9-for-x86_64-baseos-rpms"
         },
         "sha256:f14d78f37266dd982b101d3b70615033525a2659d1cf60e755a740eb9d52b805": {
           "path": "Packages/l/libwacom-1.12.1-3.el9_4.x86_64.rpm",
