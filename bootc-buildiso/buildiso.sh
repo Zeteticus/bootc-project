@@ -1,12 +1,10 @@
-#!/bin/bash
-
-sudo podman pull localhost:5000/production-registry/rhel9-bootc-scapped-v1.3
+sudo podman pull localhost:5000/rhel9-bootc-workstation-v1.10
 
 sudo podman run --rm -it \
 	--privileged --security-opt label=type:unconfined_t \
 	-v /var/lib/containers/storage:/var/lib/containers/storage \
 	-v "$(pwd)/output:/output" \
-	-v ~/bootc-project/bootc-buildiso/config.toml:/config.toml registry.redhat.io/rhel9/bootc-image-builder \
+	-v ~/bootc-project/bootc-buildiso/config.toml:/config.toml quay.io/centos-bootc/bootc-image-builder \
 	--type iso \
 	--config /config.toml \
-	localhost:5000/production-registry/rhel9-bootc-scapped-v1.3
+	localhost:5000/rhel9-bootc-workstation-v1.10

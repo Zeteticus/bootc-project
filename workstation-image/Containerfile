@@ -1,58 +1,69 @@
+# RHEL 9 DISA STIG Hardened Desktop Workstation bootc Image using OpenSCAP
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
-# Set labels for the image
-LABEL name="rhel9-bootc-stig-v1.5" \
-      version="1.5" \
+LABEL name="rhel9-bootc-stig-v1.12" \
+      version="1.12" \
       description="RHEL 9 bootc image with STIG security hardening" \
       maintainer="mark.dotson.5@us.af.mil"
 
-# Install OpenSCAP and security-related packages
-# Subscription credentials mounted as volumes during build
+# Install GUI components and OpenSCAP
 RUN dnf update -y && \
+    dnf group install -y \
+        "Server with GUI" \
+        "Workstation" && \
     dnf install -y \
+        openscap \
         openscap-scanner \
         scap-security-guide \
-        aide \
-        audit \
-        rsyslog \
-        chrony \
-        sudo \
-        vim-enhanced \
-        less \
-        which \
+        openscap-utils \
+	scap-workbench \
+        python3-pyudev \
+        python3-pip \
+        python3-lxml \
+        gdm \
 	telnet \
-        curl \
-        wget \
-        tar \
-        gzip \
-        unzip \
-        policycoreutils-python-utils \
-        bc \
-	xorg-x11-server-common \
-	xorg-x11-utils \
-	xorg-x11-xauth \
-	xterm
+        gnome-shell \
+        gnome-session \
+        gnome-terminal \
+        firefox \
+        libreoffice && \
+    dnf clean all
+
+RUN dnf install -y crypto-policies-scripts && \
+    update-crypto-policies --no-reload --set FIPS
+
+# Create a STIG admin user (since root login will be disabled)
+RUN useradd -m -G wheel ascensus && \
+    mkdir -p /var/home/ascensus/.ssh && \
+    chmod 700 /var/home/ascensus/.ssh && \
+    chown ascensus:ascensus /var/home/ascensus/.ssh
+
+# Add SSH public key for STIG admin (customize this)
+ COPY ascensus.pub /var/home/ascensus/.ssh/authorized_keys
+ RUN chmod 600 /var/home/ascensus/.ssh/authorized_keys && \
+     chown ascensus:ascensus /var/home/ascensus/.ssh/authorized_keys
+
+# Handle GUI-specific post-remediation fixes
+RUN if [ -f /etc/ssh/sshd_config ]; then \
+        # Ensure SSH service is enabled after STIG hardening
+        systemctl enable sshd || true; \
+    fi && \
+    # Ensure GUI services are properly enabled
+#    systemctl enable gdm && \
+    systemctl enable NetworkManager && \
+    # Configure GNOME for STIG compliance
+    mkdir -p /etc/dconf/profile && \
+    mkdir -p /etc/dconf/db/local.d && \
+    echo "user-db:user" > /etc/dconf/profile/user && \
+    echo "system-db:local" >> /etc/dconf/profile/user
 
 RUN dnf -y groupinstall 'Development Tools'
 
-RUN dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf clean all -y
+RUN dnf --nogpgcheck -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf clean all -y
 RUN /usr/bin/crb enable
 
 # Set root password
 RUN echo 'root:password' | chpasswd
-
-# Or create a user with sudo access
-RUN useradd -m -G wheel ascensus && \
-    echo 'ascensus:password' | chpasswd
-
-# Apply STIG security profile during build
-# Note: Some rules may not apply in container context, hence '|| true'
-RUN oscap xccdf eval \
-    --profile xccdf_org.ssgproject.content_profile_stig \
-    --remediate \
-    --results /tmp/stig-build-results.xml \
-    --report /tmp/stig-build-report.html \
-    /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml || true
 
 # Configure systemd services for STIG compliance
 RUN systemctl enable chronyd && \
@@ -61,15 +72,18 @@ RUN systemctl enable chronyd && \
 
 # Initialize AIDE database
 # This creates the initial database; final database creation happens on first boot
+RUN mkdir /var/lib/aide
 RUN aide --init || true && \
     if [ -f /var/lib/aide/aide.db.new.gz ]; then \
         mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz; \
     fi
 
+RUN oscap-im --profile xccdf_org.ssgproject.content_profile_stig_gui /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
+
 # Configure STIG-compliant SSH settings
 RUN sed -i 's/#MaxAuthTries 6/MaxAuthTries 3/' /etc/ssh/sshd_config && \
-    sed -i 's/#ClientAliveInterval 0/ClientAliveInterval 300/' /etc/ssh/sshd_config && \
-    sed -i 's/#ClientAliveCountMax 3/ClientAliveCountMax 0/' /etc/ssh/sshd_config && \
+    sed -i 's/#ClientAliveInterval 0/ClientAliveInterval 600/' /etc/ssh/sshd_config && \
+    sed -i 's/#ClientAliveCountMax 3/ClientAliveCountMax 1/' /etc/ssh/sshd_config && \
     echo "Protocol 2" >> /etc/ssh/sshd_config && \
     echo "IgnoreRhosts yes" >> /etc/ssh/sshd_config && \
     echo "HostbasedAuthentication no" >> /etc/ssh/sshd_config && \
@@ -282,33 +296,6 @@ RUN { \
     echo "auth,authpriv.*                                         /var/log/secure"; \
     } > /etc/rsyslog.d/50-stig.conf
 
-# Create compliance verification script
-RUN { \
-    echo "#!/bin/bash"; \
-    echo "# STIG Compliance Verification Script for RHEL 9"; \
-    echo "echo \"Running STIG compliance check...\""; \
-    echo "DATE=\$(date +%Y%m%d-%H%M%S)"; \
-    echo "oscap xccdf eval \\"; \
-    echo "    --profile xccdf_org.ssgproject.content_profile_stig \\"; \
-    echo "    --results /var/log/stig-compliance-\${DATE}.xml \\"; \
-    echo "    --report /var/log/stig-compliance-\${DATE}.html \\"; \
-    echo "    /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml"; \
-    echo ""; \
-    echo "# Calculate compliance percentage"; \
-    echo "if [ -f \"/var/log/stig-compliance-\${DATE}.xml\" ]; then"; \
-    echo "    PASS=\$(xmllint --xpath \"count(//rule-result[@result='pass'])\" \"/var/log/stig-compliance-\${DATE}.xml\" 2>/dev/null || echo \"0\")"; \
-    echo "    FAIL=\$(xmllint --xpath \"count(//rule-result[@result='fail'])\" \"/var/log/stig-compliance-\${DATE}.xml\" 2>/dev/null || echo \"0\")"; \
-    echo "    TOTAL=\$((PASS + FAIL))"; \
-    echo "    if [ \$TOTAL -gt 0 ]; then"; \
-    echo "        PERCENTAGE=\$(echo \"scale=2; \$PASS * 100 / \$TOTAL\" | bc -l)"; \
-    echo "        echo \"STIG Compliance: \${PERCENTAGE}% (\$PASS/\$TOTAL rules passing)\""; \
-    echo "    fi"; \
-    echo "    echo \"Results: /var/log/stig-compliance-\${DATE}.html\""; \
-    echo "fi"; \
-    } > /usr/local/bin/verify-stig-compliance.sh
-
-RUN chmod +x /usr/local/bin/verify-stig-compliance.sh
-
 # Set up daily AIDE integrity check
 RUN { \
     echo "#!/bin/bash"; \
@@ -377,14 +364,13 @@ RUN dnf clean all && \
 RUN mkdir -p /etc/containers/registries.conf.d
 
 COPY files/local-registry.conf \
-	/etc/containers/registries.conf.d/local-registry.conf
+        /etc/containers/registries.conf.d/local-registry.conf
 
 # Expose SSH port (standard)
 EXPOSE 22
 
-# Set environment variables for compliance
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
+# Set default target to graphical
+RUN systemctl set-default graphical.target
 
-# Add metadata for bootc
-LABEL io.containers.bootc.version="1.5"
+# Turn FIPS off
+RUN fips-mode-setup --disable

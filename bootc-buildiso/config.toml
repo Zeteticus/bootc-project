@@ -3,6 +3,12 @@
 
 [customizations.installer.kickstart]
 contents = """
+%packages
+@^graphical-server-environment
+@container-management
+@development
+%end
+
 part biosboot --fstype=biosboot --size=1
 part /boot --fstype=xfs --size=750
 part /boot/efi --fstype=efi --size=750
@@ -36,5 +42,10 @@ echo "ascensus:password" | chpasswd
 # Custom service configurations
 systemctl enable sshd
 systemctl enable chronyd
+%end
+
+%addon com_redhat_oscap
+	content-type = scap-security-guide
+	profile = xccdf_org.ssgproject.content_profile_stig_gui
 %end
 """
