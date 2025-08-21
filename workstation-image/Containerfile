@@ -1,8 +1,10 @@
 # RHEL 9 DISA STIG Hardened Desktop Workstation bootc Image using OpenSCAP
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
-LABEL name="rhel9-bootc-stig-v1.12" \
-      version="1.12" \
+ARG VERSION="v1.15"
+
+LABEL name="rhel9-bootc-stig-$VERSION" \
+      version="$VERSION" \
       description="RHEL 9 bootc image with STIG security hardening" \
       maintainer="mark.dotson.5@us.af.mil"
 
@@ -21,6 +23,7 @@ RUN dnf update -y && \
         python3-pip \
         python3-lxml \
         gdm \
+	butane \
 	telnet \
         gnome-shell \
         gnome-session \
@@ -82,7 +85,7 @@ RUN oscap-im --profile xccdf_org.ssgproject.content_profile_stig_gui /usr/share/
 
 # Configure STIG-compliant SSH settings
 RUN sed -i 's/#MaxAuthTries 6/MaxAuthTries 3/' /etc/ssh/sshd_config && \
-    sed -i 's/#ClientAliveInterval 0/ClientAliveInterval 600/' /etc/ssh/sshd_config && \
+    sed -i 's/#ClientAliveInterval 0/ClientAliveInterval 21600/' /etc/ssh/sshd_config && \
     sed -i 's/#ClientAliveCountMax 3/ClientAliveCountMax 1/' /etc/ssh/sshd_config && \
     echo "Protocol 2" >> /etc/ssh/sshd_config && \
     echo "IgnoreRhosts yes" >> /etc/ssh/sshd_config && \
@@ -372,5 +375,18 @@ EXPOSE 22
 # Set default target to graphical
 RUN systemctl set-default graphical.target
 
-# Turn FIPS off
-RUN fips-mode-setup --disable
+# Enable FIPS mode
+
+# Install all FIPS-related packages
+RUN dnf install -y dracut-fips dracut-fips-aesni openssl
+
+# Configure dracut for FIPS mode
+RUN echo 'add_dracutmodules+=" fips "' > /etc/dracut.conf.d/40-fips.conf && \
+    echo 'install_items+=" /etc/system-fips "' >> /etc/dracut.conf.d/40-fips.conf && \
+    echo 'kernel_cmdline+=" fips=1 "' >> /etc/dracut.conf.d/40-fips.conf
+
+# Create FIPS marker
+RUN touch /etc/system-fips
+
+# Configure GRUB for FIPS (this will be used when bootc deploys)
+RUN echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} fips=1"' >> /etc/default/grub
