@@ -1,7 +1,7 @@
 # RHEL 9 DISA STIG Hardened Desktop Workstation bootc Image using OpenSCAP
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
-ARG VERSION="v1.15"
+ARG VERSION="v1.16"
 
 LABEL name="rhel9-bootc-stig-$VERSION" \
       version="$VERSION" \
@@ -36,15 +36,10 @@ RUN dnf install -y crypto-policies-scripts && \
     update-crypto-policies --no-reload --set FIPS
 
 # Create a STIG admin user (since root login will be disabled)
-RUN useradd -m -G wheel ascensus && \
-    mkdir -p /var/home/ascensus/.ssh && \
-    chmod 700 /var/home/ascensus/.ssh && \
-    chown ascensus:ascensus /var/home/ascensus/.ssh
-
-# Add SSH public key for STIG admin (customize this)
- COPY ascensus.pub /var/home/ascensus/.ssh/authorized_keys
- RUN chmod 600 /var/home/ascensus/.ssh/authorized_keys && \
-     chown ascensus:ascensus /var/home/ascensus/.ssh/authorized_keys
+RUN useradd -m -G wheel dots-pa && \
+    mkdir -p /var/home/dots-pa/.ssh && \
+    chmod 700 /var/home/dots-pa/.ssh && \
+    chown dots-pa:dots-pa /var/home/dots-pa/.ssh
 
 # Handle GUI-specific post-remediation fixes
 RUN if [ -f /etc/ssh/sshd_config ]; then \
@@ -374,19 +369,3 @@ EXPOSE 22
 
 # Set default target to graphical
 RUN systemctl set-default graphical.target
-
-# Enable FIPS mode
-
-# Install all FIPS-related packages
-RUN dnf install -y dracut-fips dracut-fips-aesni openssl
-
-# Configure dracut for FIPS mode
-RUN echo 'add_dracutmodules+=" fips "' > /etc/dracut.conf.d/40-fips.conf && \
-    echo 'install_items+=" /etc/system-fips "' >> /etc/dracut.conf.d/40-fips.conf && \
-    echo 'kernel_cmdline+=" fips=1 "' >> /etc/dracut.conf.d/40-fips.conf
-
-# Create FIPS marker
-RUN touch /etc/system-fips
-
-# Configure GRUB for FIPS (this will be used when bootc deploys)
-RUN echo 'GRUB_CMDLINE_LINUX="${GRUB_CMDLINE_LINUX} fips=1"' >> /etc/default/grub
