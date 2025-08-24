@@ -65,15 +65,10 @@ RUN dnf install -y \
     || echo "Some optional packages not available, continuing..."
 
 # Create a STIG admin user (since root login will be disabled)
-RUN useradd -m -G wheel ascensus && \
-    mkdir -p /var/home/ascensus/.ssh && \
-    chmod 700 /var/home/ascensus/.ssh && \
-    chown ascensus:ascensus /var/home/ascensus/.ssh
-
-# Add SSH public key for STIG admin (customize this)
- COPY ascensus.pub /var/home/ascensus/.ssh/authorized_keys
- RUN chmod 600 /var/home/ascensus/.ssh/authorized_keys && \
-     chown ascensus:ascensus /var/home/ascensus/.ssh/authorized_keys
+RUN useradd -m -G wheel dots-pa && \
+    mkdir -p /var/home/dots-pa/.ssh && \
+    chmod 700 /var/home/dots-pa/.ssh && \
+    chown dots-pa:dots-pa /var/home/dots-pa/.ssh
 
 RUN dnf -y groupinstall 'Development Tools'
 
