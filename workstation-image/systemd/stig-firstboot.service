@@ -1,0 +1,27 @@
+[Unit]
+Description=Apply STIG Configuration on First Boot
+After=multi-user.target network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/stig-applied
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/apply-stig.sh
+ExecStartPost=/usr/bin/touch /var/lib/stig-applied
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=600
+User=root
+
+# Ensure we have access to all system resources
+PrivateNetwork=no
+PrivateDevices=no
+PrivateTmp=no
+ProtectSystem=no
+ProtectHome=no
+NoNewPrivileges=no
+
+[Install]
+WantedBy=multi-user.target

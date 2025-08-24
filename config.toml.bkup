@@ -1,6 +1,9 @@
 # Custom Partitioning Configuration
 # Converted from kickstart partitioning commands
 
+# Enable FIPS
+kargs = ["fips=1"]
+
 [[partitions]]
 name = "biosboot"
 type = "partition"
@@ -8,7 +11,7 @@ fstype = "biosboot"
 size = 1
 mountpoint = ""
 
-[[partitions]]
+##[[partitions]]
 name = "boot"
 type = "partition"
 fstype = "xfs"

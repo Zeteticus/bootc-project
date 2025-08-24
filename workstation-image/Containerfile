@@ -1,36 +1,68 @@
-# RHEL 9 DISA STIG Hardened Desktop Workstation bootc Image using OpenSCAP
-FROM registry.redhat.io/rhel9/rhel-bootc:latest
+# RHEL 10 Desktop Workstation Bootc Image
+FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
-LABEL name="rhel9-bootc-stig-v1.12" \
-      version="1.12" \
-      description="RHEL 9 bootc image with STIG security hardening" \
-      maintainer="mark.dotson.5@us.af.mil"
+# Enable fips=1 kernel argument: https://bootc-dev.github.io/bootc/building/kernel-arguments.html
+COPY 01-fips.toml /usr/lib/bootc/kargs.d/
+# Install and enable the FIPS crypto policy
+RUN dnf install -y crypto-policies-scripts && update-crypto-policies --no-reload --set FIPS
 
-# Install GUI components and OpenSCAP
+# Set environment variables
+ENV BOOTC_IMAGE=true
+
+# Update system and install base packages
 RUN dnf update -y && \
-    dnf group install -y \
-        "Server with GUI" \
-        "Workstation" && \
     dnf install -y \
-        openscap \
-        openscap-scanner \
-        scap-security-guide \
-        openscap-utils \
-	scap-workbench \
-        python3-pyudev \
-        python3-pip \
-        python3-lxml \
-        gdm \
-	telnet \
-        gnome-shell \
-        gnome-session \
-        gnome-terminal \
-        firefox \
-        libreoffice && \
-    dnf clean all
+    # Desktop Environment
+    @workstation-product-environment \
+    # Development tools
+    gcc \
+    gcc-c++ \
+    make \
+    cmake \
+    git \
+    vim \
+    nano \
+    # Container tools
+    podman \
+    buildah \
+    skopeo \
+    # System utilities
+    procps-ng \
+    tree \
+    wget \
+    curl \
+    rsync \
+    unzip \
+    tar \
+    # Media codecs (if available in repos)
+    gstreamer1-plugins-base \
+    gstreamer1-plugins-good \
+    # Network tools
+    NetworkManager-wifi \
+    iw \
+    # Hardware support
+    mesa-dri-drivers \
+    # Fonts
+    liberation-fonts \
+    # Python development
+    python3 \
+    python3-pip \
+    python3-devel \
+    # Security tools
+    aide \
+    audit \
+    scap-security-guide \
+    openscap-scanner \
+    openscap \
+    openscap-utils \
+    && dnf clean all
 
-RUN dnf install -y crypto-policies-scripts && \
-    update-crypto-policies --no-reload --set FIPS
+# Install additional packages that might be available
+RUN dnf install -y \
+    gnome-tweaks \
+    gnome-extensions-app \
+    google-noto-fonts-common \
+    || echo "Some optional packages not available, continuing..."
 
 # Create a STIG admin user (since root login will be disabled)
 RUN useradd -m -G wheel ascensus && \
@@ -43,20 +75,6 @@ RUN useradd -m -G wheel ascensus && \
  RUN chmod 600 /var/home/ascensus/.ssh/authorized_keys && \
      chown ascensus:ascensus /var/home/ascensus/.ssh/authorized_keys
 
-# Handle GUI-specific post-remediation fixes
-RUN if [ -f /etc/ssh/sshd_config ]; then \
-        # Ensure SSH service is enabled after STIG hardening
-        systemctl enable sshd || true; \
-    fi && \
-    # Ensure GUI services are properly enabled
-#    systemctl enable gdm && \
-    systemctl enable NetworkManager && \
-    # Configure GNOME for STIG compliance
-    mkdir -p /etc/dconf/profile && \
-    mkdir -p /etc/dconf/db/local.d && \
-    echo "user-db:user" > /etc/dconf/profile/user && \
-    echo "system-db:local" >> /etc/dconf/profile/user
-
 RUN dnf -y groupinstall 'Development Tools'
 
 RUN dnf --nogpgcheck -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf clean all -y
@@ -65,312 +83,54 @@ RUN /usr/bin/crb enable
 # Set root password
 RUN echo 'root:password' | chpasswd
 
-# Configure systemd services for STIG compliance
-RUN systemctl enable chronyd && \
-    systemctl enable auditd && \
-    systemctl enable rsyslog
+# Enable services
+RUN systemctl enable gdm && \
+    systemctl enable NetworkManager && \
+    systemctl enable bluetooth && \
+    systemctl enable cups
 
-# Initialize AIDE database
-# This creates the initial database; final database creation happens on first boot
-RUN mkdir /var/lib/aide
-RUN aide --init || true && \
-    if [ -f /var/lib/aide/aide.db.new.gz ]; then \
-        mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz; \
-    fi
+# Create a default user (optional - can be done at boot time instead)
+# RUN useradd -m -G wheel workstation && \
+#     echo "workstation:password" | chpasswd
 
-RUN oscap-im --profile xccdf_org.ssgproject.content_profile_stig_gui /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
+# Configure sudoers for wheel group
+RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/wheel
 
-# Configure STIG-compliant SSH settings
-RUN sed -i 's/#MaxAuthTries 6/MaxAuthTries 3/' /etc/ssh/sshd_config && \
-    sed -i 's/#ClientAliveInterval 0/ClientAliveInterval 600/' /etc/ssh/sshd_config && \
-    sed -i 's/#ClientAliveCountMax 3/ClientAliveCountMax 1/' /etc/ssh/sshd_config && \
-    echo "Protocol 2" >> /etc/ssh/sshd_config && \
-    echo "IgnoreRhosts yes" >> /etc/ssh/sshd_config && \
-    echo "HostbasedAuthentication no" >> /etc/ssh/sshd_config && \
-    echo "PermitEmptyPasswords no" >> /etc/ssh/sshd_config && \
-    echo "X11Forwarding no" >> /etc/ssh/sshd_config && \
-    echo "MaxStartups 10:30:60" >> /etc/ssh/sshd_config && \
-    echo "Ciphers aes256-ctr,aes192-ctr,aes128-ctr" >> /etc/ssh/sshd_config && \
-    echo "MACs hmac-sha2-256,hmac-sha2-512" >> /etc/ssh/sshd_config
+# Set up flatpak support
+RUN flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-# Configure audit rules for STIG compliance
-RUN mkdir -p /etc/audit/rules.d && \
-    { \
-    echo "# STIG-required audit rules for RHEL 9"; \
-    echo "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time-change"; \
-    echo "-a always,exit -F arch=b32 -S adjtimex -S settimeofday -S stime -k time-change"; \
-    echo "-a always,exit -F arch=b64 -S clock_settime -k time-change"; \
-    echo "-a always,exit -F arch=b32 -S clock_settime -k time-change"; \
-    echo "-w /etc/localtime -p wa -k time-change"; \
-    echo ""; \
-    echo "# Identity rules"; \
-    echo "-w /etc/group -p wa -k identity"; \
-    echo "-w /etc/passwd -p wa -k identity"; \
-    echo "-w /etc/gshadow -p wa -k identity"; \
-    echo "-w /etc/shadow -p wa -k identity"; \
-    echo "-w /etc/security/opasswd -p wa -k identity"; \
-    echo ""; \
-    echo "# Login records"; \
-    echo "-w /var/log/lastlog -p wa -k logins"; \
-    echo "-w /var/run/faillock -p wa -k logins"; \
-    echo "-w /var/log/tallylog -p wa -k logins"; \
-    echo ""; \
-    echo "# SELinux events"; \
-    echo "-w /etc/selinux -p wa -k MAC-policy"; \
-    echo "-w /usr/share/selinux -p wa -k MAC-policy"; \
-    echo ""; \
-    echo "# System administrator actions"; \
-    echo "-w /etc/sudoers -p wa -k scope"; \
-    echo "-w /etc/sudoers.d -p wa -k scope"; \
-    echo ""; \
-    echo "# Kernel module loading"; \
-    echo "-w /sbin/insmod -p x -k modules"; \
-    echo "-w /sbin/rmmod -p x -k modules"; \
-    echo "-w /sbin/modprobe -p x -k modules"; \
-    echo "-a always,exit -F arch=b64 -S init_module -S delete_module -k modules"; \
-    echo ""; \
-    echo "# System mount operations"; \
-    echo "-a always,exit -F arch=b64 -S mount -k mounts"; \
-    echo "-a always,exit -F arch=b32 -S mount -k mounts"; \
-    echo ""; \
-    echo "# File deletion events"; \
-    echo "-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -k delete"; \
-    echo "-a always,exit -F arch=b32 -S unlink -S unlinkat -S rename -S renameat -k delete"; \
-    echo ""; \
-    echo "# System administration"; \
-    echo "-w /etc/issue -p wa -k system-locale"; \
-    echo "-w /etc/issue.net -p wa -k system-locale"; \
-    echo "-w /etc/hosts -p wa -k system-locale"; \
-    echo "-w /etc/sysconfig/network -p wa -k system-locale"; \
-    echo "-w /etc/sysconfig/network-scripts -p wa -k system-locale"; \
-    echo ""; \
-    echo "# Process and session initiation"; \
-    echo "-w /var/run/utmp -p wa -k session"; \
-    echo "-w /var/log/wtmp -p wa -k logins"; \
-    echo "-w /var/log/btmp -p wa -k logins"; \
-    echo ""; \
-    echo "# Discretionary access control permission modification"; \
-    echo "-a always,exit -F arch=b64 -S chmod -S fchmod -S fchmodat -k perm_mod"; \
-    echo "-a always,exit -F arch=b32 -S chmod -S fchmod -S fchmodat -k perm_mod"; \
-    echo "-a always,exit -F arch=b64 -S chown -S fchown -S fchownat -S lchown -k perm_mod"; \
-    echo "-a always,exit -F arch=b32 -S chown -S fchown -S fchownat -S lchown -k perm_mod"; \
-    echo ""; \
-    echo "# Unauthorized access attempts"; \
-    echo "-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -k access"; \
-    echo "-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EACCES -k access"; \
-    echo "-a always,exit -F arch=b64 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -k access"; \
-    echo "-a always,exit -F arch=b32 -S creat -S open -S openat -S truncate -S ftruncate -F exit=-EPERM -k access"; \
-    echo ""; \
-    echo "# Make the configuration immutable"; \
-    echo "-e 2"; \
-    } > /etc/audit/rules.d/stig.rules
+# Configure automatic updates (optional)
+RUN dnf install -y dnf-automatic && \
+    systemctl enable dnf-automatic.timer
 
-# Configure chrony for STIG-compliant time synchronization
-RUN { \
-    echo "# STIG-compliant NTP configuration for RHEL 9"; \
-    echo "# Use public time servers (replace with your organization's NTP servers)"; \
-    echo "pool 2.rhel.pool.ntp.org iburst"; \
-    echo ""; \
-    echo "# Record the rate at which the system clock gains/losses time"; \
-    echo "driftfile /var/lib/chrony/drift"; \
-    echo ""; \
-    echo "# Allow the system clock to be stepped in the first three updates"; \
-    echo "# if its offset is larger than 1 second"; \
-    echo "makestep 1.0 3"; \
-    echo ""; \
-    echo "# Enable kernel synchronization of the real-time clock (RTC)"; \
-    echo "rtcsync"; \
-    echo ""; \
-    echo "# Serve time even if not synchronized to a time source"; \
-    echo "local stratum 10"; \
-    echo ""; \
-    echo "# Specify file containing keys for NTP authentication"; \
-    echo "keyfile /etc/chrony.keys"; \
-    echo ""; \
-    echo "# Save NTS keys and cookies"; \
-    echo "ntsdumpdir /var/lib/chrony"; \
-    echo ""; \
-    echo "# Insert/delete leap seconds by slewing instead of stepping"; \
-    echo "leapsectz right/UTC"; \
-    echo ""; \
-    echo "# Specify directory for log files"; \
-    echo "logdir /var/log/chrony"; \
-    } > /etc/chrony.conf
+# Create directories and add custom configurations if they exist
+RUN umask 022 && mkdir -p /usr/local/bin
+RUN chmod 775 /usr/local/bin
 
-# Configure login banners for STIG compliance
-RUN { \
-    echo "***********************************************************************"; \
-    echo "*                                                                     *"; \
-    echo "* This system is for the use of authorized users only. Individuals   *"; \
-    echo "* using this computer system without authority, or in excess of their *"; \
-    echo "* authority, are subject to having all of their activities on this   *"; \
-    echo "* system monitored and recorded by system personnel.                 *"; \
-    echo "*                                                                     *"; \
-    echo "* In the course of monitoring individuals improperly using this       *"; \
-    echo "* system, or in the course of system maintenance, the activities of  *"; \
-    echo "* authorized users may also be monitored.                            *"; \
-    echo "*                                                                     *"; \
-    echo "* Anyone using this system expressly consents to such monitoring and *"; \
-    echo "* is advised that if such monitoring reveals possible evidence of     *"; \
-    echo "* criminal activity, system personnel may provide the evidence from   *"; \
-    echo "* such monitoring to law enforcement officials.                      *"; \
-    echo "*                                                                     *"; \
-    echo "***********************************************************************"; \
-    } > /etc/issue
-
-# Copy issue to issue.net for network logins
-RUN cp /etc/issue /etc/issue.net
-
-# Configure login.defs for STIG compliance
-RUN sed -i 's/^PASS_MAX_DAYS.*/PASS_MAX_DAYS   60/' /etc/login.defs && \
-    sed -i 's/^PASS_MIN_DAYS.*/PASS_MIN_DAYS   1/' /etc/login.defs && \
-    sed -i 's/^PASS_MIN_LEN.*/PASS_MIN_LEN    15/' /etc/login.defs && \
-    sed -i 's/^PASS_WARN_AGE.*/PASS_WARN_AGE   7/' /etc/login.defs
-
-# Configure log rotation for STIG compliance
-RUN { \
-    echo "/var/log/messages /var/log/secure /var/log/maillog /var/log/spooler /var/log/boot.log /var/log/cron {"; \
-    echo "    daily"; \
-    echo "    missingok"; \
-    echo "    rotate 30"; \
-    echo "    compress"; \
-    echo "    delaycompress"; \
-    echo "    sharedscripts"; \
-    echo "    postrotate"; \
-    echo "        /bin/kill -HUP \`cat /var/run/rsyslogd.pid 2> /dev/null\` 2> /dev/null || true"; \
-    echo "    endscript"; \
-    echo "}"; \
-    echo ""; \
-    echo "/var/log/audit/audit.log {"; \
-    echo "    daily"; \
-    echo "    missingok"; \
-    echo "    rotate 30"; \
-    echo "    compress"; \
-    echo "    delaycompress"; \
-    echo "    postrotate"; \
-    echo "        /bin/kill -HUP \`cat /var/run/auditd.pid 2> /dev/null\` 2> /dev/null || true"; \
-    echo "    endscript"; \
-    echo "}"; \
-    } > /etc/logrotate.d/stig-logs
-
-# Set password complexity requirements
-RUN { \
-    echo ""; \
-    echo "# STIG password requirements for RHEL 9"; \
-    echo "minlen = 15"; \
-    echo "minclass = 4"; \
-    echo "maxrepeat = 2"; \
-    echo "maxclassrepeat = 4"; \
-    echo "gecoscheck = 1"; \
-    echo "dictcheck = 1"; \
-    echo "usercheck = 1"; \
-    echo "difok = 8"; \
-    echo "enforce_for_root"; \
-    } >> /etc/security/pwquality.conf
-
-# Configure PAM for account lockout
-RUN cp /etc/pam.d/system-auth /etc/pam.d/system-auth.bak && \
-    sed -i '/pam_unix.so/i auth        required      pam_faillock.so preauth audit silent deny=3 unlock_time=604800' /etc/pam.d/system-auth && \
-    sed -i '/pam_unix.so/a auth        [default=die] pam_faillock.so authfail audit deny=3 unlock_time=604800' /etc/pam.d/system-auth && \
-    sed -i '/pam_unix.so/a account     required      pam_faillock.so' /etc/pam.d/system-auth
-
-# Configure bootc-specific kernel parameters
-RUN echo 'GRUB_CMDLINE_LINUX_DEFAULT="audit=1 audit_backlog_limit=8192 slub_debug=P page_poison=1 vsyscall=none"' >> /etc/default/grub
-
-# Disable unnecessary services for STIG compliance
-RUN systemctl disable kdump || true && \
-    systemctl disable postfix || true && \
-    systemctl disable rpcbind || true && \
-    systemctl disable nfs-server || true
-
-# Configure rsyslog for remote logging capability
-RUN { \
-    echo "# STIG logging configuration"; \
-    echo "# Forward logs to remote syslog server (uncomment and configure as needed)"; \
-    echo "#*.* @@logserver.example.com:514"; \
-    echo ""; \
-    echo "# Log kernel messages to separate file"; \
-    echo "kern.*                                                  /var/log/kern.log"; \
-    echo ""; \
-    echo "# Log authentication messages to secure"; \
-    echo "auth,authpriv.*                                         /var/log/secure"; \
-    } > /etc/rsyslog.d/50-stig.conf
-
-# Set up daily AIDE integrity check
-RUN { \
-    echo "#!/bin/bash"; \
-    echo "# Daily AIDE integrity check"; \
-    echo "if [ -f /var/lib/aide/aide.db.gz ]; then"; \
-    echo "    /usr/sbin/aide --check | logger -t aide-check || true"; \
-    echo "fi"; \
-    } > /etc/cron.daily/aide-check
-
-RUN chmod +x /etc/cron.daily/aide-check
-
-# Configure umask for STIG compliance
-RUN echo "umask 077" >> /etc/bashrc && \
-    echo "umask 077" >> /etc/profile
-
-# Set proper file permissions for STIG compliance
-RUN chmod 600 /etc/ssh/*_key 2>/dev/null || true && \
-    chmod 644 /etc/ssh/*.pub 2>/dev/null || true && \
-    chmod 640 /etc/shadow && \
-    chmod 640 /etc/gshadow
-
-# Configure kernel parameters for STIG compliance
-RUN { \
-    echo "# STIG kernel parameters for RHEL 9"; \
-    echo "net.ipv4.ip_forward = 0"; \
-    echo "net.ipv4.conf.all.send_redirects = 0"; \
-    echo "net.ipv4.conf.default.send_redirects = 0"; \
-    echo "net.ipv4.conf.all.accept_source_route = 0"; \
-    echo "net.ipv4.conf.default.accept_source_route = 0"; \
-    echo "net.ipv4.conf.all.accept_redirects = 0"; \
-    echo "net.ipv4.conf.default.accept_redirects = 0"; \
-    echo "net.ipv4.conf.all.secure_redirects = 0"; \
-    echo "net.ipv4.conf.default.secure_redirects = 0"; \
-    echo "net.ipv4.conf.all.log_martians = 1"; \
-    echo "net.ipv4.conf.default.log_martians = 1"; \
-    echo "net.ipv4.icmp_echo_ignore_broadcasts = 1"; \
-    echo "net.ipv4.icmp_ignore_bogus_error_responses = 1"; \
-    echo "net.ipv4.conf.all.rp_filter = 1"; \
-    echo "net.ipv4.conf.default.rp_filter = 1"; \
-    echo "net.ipv4.tcp_syncookies = 1"; \
-    echo "net.ipv6.conf.all.accept_source_route = 0"; \
-    echo "net.ipv6.conf.default.accept_source_route = 0"; \
-    echo "net.ipv6.conf.all.accept_redirects = 0"; \
-    echo "net.ipv6.conf.default.accept_redirects = 0"; \
-    echo "net.ipv6.conf.all.accept_ra = 0"; \
-    echo "net.ipv6.conf.default.accept_ra = 0"; \
-    echo "kernel.randomize_va_space = 2"; \
-    echo "kernel.dmesg_restrict = 1"; \
-    echo "kernel.kptr_restrict = 1"; \
-    echo "kernel.yama.ptrace_scope = 1"; \
-    } >> /etc/sysctl.d/99-stig.conf
-
-# Clean up temporary files from STIG evaluation
-RUN rm -f /tmp/stig-build-results.xml /tmp/stig-build-report.html
-
-# Ensure proper permissions for bootc compliance
-RUN chmod -R go-w /etc /usr/lib/systemd/system || true
-
-# Set proper SELinux contexts (if SELinux is enabled)
-RUN restorecon -R /etc /usr/local/bin || true
-
-# Final cleanup
-RUN dnf clean all && \
-    rm -rf /var/cache/dnf/* /tmp/* /var/tmp/* /root/.cache || true
-
-RUN mkdir -p /etc/containers/registries.conf.d
-
-COPY files/local-registry.conf \
-        /etc/containers/registries.conf.d/local-registry.conf
-
-# Expose SSH port (standard)
-EXPOSE 22
+# Copy custom scripts if they exist (commented out - uncomment if you have scripts)
+COPY --chmod=0755 scripts/apply-stig.sh /usr/local/bin/
+#COPY --chmod=0644 config/ /etc/
 
 # Set default target to graphical
 RUN systemctl set-default graphical.target
 
-# Turn FIPS off
-RUN fips-mode-setup --disable
+# Bootc specific optimizations
+RUN rpm-ostree cleanup -m && \
+    ostree container commit
+
+# Copy and install the systemd service
+COPY systemd/stig-firstboot.service /etc/systemd/system/
+COPY scripts/apply-stig.sh /usr/local/bin/apply-stig.sh
+RUN chmod +x /usr/local/bin/apply-stig.sh && \
+    systemctl enable stig-firstboot.service
+
+# Labels for the image
+LABEL name="rhel10-desktop-workstation" \
+      version="1.0" \
+      description="RHEL 10 Desktop Workstation with development tools" \
+      io.opencontainers.image.title="RHEL 10 Desktop Workstation Bootc" \
+      io.opencontainers.image.description="A RHEL 10 based desktop workstation image for bootc" \
+      io.opencontainers.image.vendor="Custom Build"
+
+# Set entrypoint (bootc handles this)
+# ENTRYPOINT ["/sbin/init"]
