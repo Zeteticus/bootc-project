@@ -3,12 +3,6 @@
 
 [customizations.installer.kickstart]
 contents = """
-%packages
-@^graphical-server-environment
-@container-management
-@development
-%end
-
 part biosboot --fstype=biosboot --size=1
 part /boot --fstype=xfs --size=750
 part /boot/efi --fstype=efi --size=750
@@ -24,28 +18,11 @@ logvol /var --fstype="xfs" --size=15000 --name=var --vgname=rhel
 logvol /var/tmp --fstype="xfs" --size=2048 --name=var_tmp --vgname=rhel --fsoptions="nodev,nosuid,noexec"
 logvol /opt --fstype="xfs" --size=15000 --name=opt --vgname=rhel
 
-rootpw --plaintext password
-
 # Additional kickstart commands for non-interactive installation
 text --non-interactive
+rootpw --cleartext password
+user --groups=wheel --name=ascensus --password=$y$j9T$iCO7bznh6HiE8h4y0MJoMBAa$UY2nBgBEKUqfK24BHHFsW2P12oEQ.FPfJ5Y82QjcC28 --iscrypted
 zerombr
 clearpart --all --initlabel --disklabel=gpt
 network --bootproto=dhcp --device=link --activate --onboot=on
-%post
-# Post-installation script
-echo "Custom post-installation configuration"
-
-# Add custom users, configurations, etc.
-useradd -m -G wheel ascensus
-echo "ascensus:password" | chpasswd
-
-# Custom service configurations
-systemctl enable sshd
-systemctl enable chronyd
-%end
-
-%addon com_redhat_oscap
-	content-type = scap-security-guide
-	profile = xccdf_org.ssgproject.content_profile_stig_gui
-%end
 """

@@ -2,9 +2,9 @@
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
 # Enable fips=1 kernel argument: https://bootc-dev.github.io/bootc/building/kernel-arguments.html
-COPY 01-fips.toml /usr/lib/bootc/kargs.d/
+#COPY 01-fips.toml /usr/lib/bootc/kargs.d/
 # Install and enable the FIPS crypto policy
-RUN dnf install -y crypto-policies-scripts && update-crypto-policies --no-reload --set FIPS
+#RUN dnf install -y crypto-policies-scripts && update-crypto-policies --no-reload --set FIPS
 
 # Set environment variables
 ENV BOOTC_IMAGE=true
@@ -65,12 +65,10 @@ RUN dnf install -y \
     || echo "Some optional packages not available, continuing..."
 
 # Create a STIG admin user (since root login will be disabled)
-RUN useradd -m -G wheel dots-pa && \
-    mkdir -p /var/home/dots-pa/.ssh && \
-    chmod 700 /var/home/dots-pa/.ssh && \
-    chown dots-pa:dots-pa /var/home/dots-pa/.ssh
-
-RUN dnf -y groupinstall 'Development Tools'
+RUN useradd -m -G wheel ascensus && \
+    mkdir -p /var/home/ascensus/.ssh && \
+    chmod 700 /var/home/ascensus/.ssh && \
+    chown ascensus:ascensus /var/home/ascensus/.ssh
 
 RUN dnf --nogpgcheck -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf clean all -y
 RUN /usr/bin/crb enable
@@ -80,13 +78,7 @@ RUN echo 'root:password' | chpasswd
 
 # Enable services
 RUN systemctl enable gdm && \
-    systemctl enable NetworkManager && \
-    systemctl enable bluetooth && \
-    systemctl enable cups
-
-# Create a default user (optional - can be done at boot time instead)
-# RUN useradd -m -G wheel workstation && \
-#     echo "workstation:password" | chpasswd
+    systemctl enable NetworkManager
 
 # Configure sudoers for wheel group
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/wheel
@@ -94,16 +86,12 @@ RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/wheel
 # Set up flatpak support
 RUN flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-# Configure automatic updates (optional)
-RUN dnf install -y dnf-automatic && \
-    systemctl enable dnf-automatic.timer
-
 # Create directories and add custom configurations if they exist
 RUN umask 022 && mkdir -p /usr/local/bin
 RUN chmod 775 /usr/local/bin
 
 # Copy custom scripts if they exist (commented out - uncomment if you have scripts)
-COPY --chmod=0755 scripts/apply-stig.sh /usr/local/bin/
+#COPY --chmod=0755 scripts/apply-stig.sh /usr/local/bin/
 #COPY --chmod=0644 config/ /etc/
 
 # Set default target to graphical
@@ -116,8 +104,8 @@ RUN rpm-ostree cleanup -m && \
 # Copy and install the systemd service
 COPY systemd/stig-firstboot.service /etc/systemd/system/
 COPY scripts/apply-stig.sh /usr/local/bin/apply-stig.sh
-RUN chmod +x /usr/local/bin/apply-stig.sh && \
-    systemctl enable stig-firstboot.service
+#RUN chmod +x /usr/local/bin/apply-stig.sh && \
+#    systemctl enable stig-firstboot.service
 
 # Labels for the image
 LABEL name="rhel10-desktop-workstation" \
@@ -126,6 +114,3 @@ LABEL name="rhel10-desktop-workstation" \
       io.opencontainers.image.title="RHEL 10 Desktop Workstation Bootc" \
       io.opencontainers.image.description="A RHEL 10 based desktop workstation image for bootc" \
       io.opencontainers.image.vendor="Custom Build"
-
-# Set entrypoint (bootc handles this)
-# ENTRYPOINT ["/sbin/init"]

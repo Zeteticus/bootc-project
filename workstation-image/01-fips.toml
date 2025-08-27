@@ -1,2 +1,2 @@
 # Enable FIPS
-kargs = ["fips=1"]
+kargs = ["fips=0"]
