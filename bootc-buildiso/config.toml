@@ -1,14 +1,25 @@
-# bootc-image-builder configuration file
-# Embeds kickstart partitioning commands for advanced LVM setup
-
 [customizations.installer.kickstart]
 contents = """
-part biosboot --fstype=biosboot --size=1
-part /boot --fstype=xfs --size=750
-part /boot/efi --fstype=efi --size=750
-part pv.01 --fstype="lvmpv" --size=501375
+# Complete disk preparation
+text
+zerombr
+clearpart --drives=sda --all --initlabel --disklabel=gpt
+
+# Choose EITHER UEFI OR BIOS, not both:
+# For UEFI systems:
+part /boot/efi --fstype=efi --size=750 --ondisk=sda
+part /boot --fstype=xfs --size=750 --ondisk=sda
+
+# For BIOS systems (comment out the above, use this):
+# part biosboot --fstype=biosboot --size=1 --ondisk=sda  
+# part /boot --fstype=xfs --size=750 --ondisk=sda
+
+# Physical volume (adjust size if needed)
+part pv.01 --fstype="lvmpv" --size=1 --grow --ondisk=sda
+
+# Your LVM setup (unchanged)
 volgroup rhel --pesize=4096 pv.01
-logvol / --fstype="xfs" --size=80000 --name=root --vgname=rhel
+logvol / --fstype="xfs" --size=20000 --name=root --vgname=rhel
 logvol /home --fstype="xfs" --size=5000 --name=home --vgname=rhel --grow
 logvol swap --fstype="swap" --size=8192 --name=swap --vgname=rhel
 logvol /tmp --fstype="xfs" --size=15000 --name=tmp --vgname=rhel --fsoptions="nodev,nosuid,noexec"
@@ -18,11 +29,7 @@ logvol /var --fstype="xfs" --size=15000 --name=var --vgname=rhel
 logvol /var/tmp --fstype="xfs" --size=2048 --name=var_tmp --vgname=rhel --fsoptions="nodev,nosuid,noexec"
 logvol /opt --fstype="xfs" --size=15000 --name=opt --vgname=rhel
 
-# Additional kickstart commands for non-interactive installation
-text --non-interactive
-rootpw --cleartext password
+# Authentication
+rootpw --iscrypted $6$/I1rhFUi71aYQMwI$xuxLIhvfJ92e4xzDqPvHzDrNymUOXq6jZtXgVxyqR0djk9Ej64Re60hrNhGvE7jkQPp5rOkLm/YNacyXnDt4c0
 user --groups=wheel --name=ascensus --password=$y$j9T$iCO7bznh6HiE8h4y0MJoMBAa$UY2nBgBEKUqfK24BHHFsW2P12oEQ.FPfJ5Y82QjcC28 --iscrypted
-zerombr
-clearpart --all --initlabel --disklabel=gpt
-network --bootproto=dhcp --device=link --activate --onboot=on
 """

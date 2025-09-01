@@ -1,0 +1,111 @@
+name = "rhel10-bootc-workstation"
+description = "RHEL 10 Desktop Workstation with development tools - bootc container"
+version = "1.0.0"
+modules = []
+groups = []
+distro = "rhel-10"
+
+# Container configuration - reference your bootc container
+[containers]
+source = "localhost:5000/rhel10-bootc-wks:latest"
+
+# User configuration - ascensus user
+[[customizations.user]]
+name = "ascensus"
+description = "Admin User"
+password = "$y$j9T$iCO7bznh6HiE8h4y0MJoMBAa$UY2nBgBEKUqfK24BHHFsW2P12oEQ.FPfJ5Y82QjcC28"
+home = "/home/ascensus"
+shell = "/bin/bash"
+groups = ["wheel", "users"]
+uid = 1000
+gid = 1000
+
+# Root user configuration  
+[[customizations.user]]
+name = "root"
+password = "$6$/I1rhFUi71aYQMwI$xuxLIhvfJ92e4xzDqPvHzDrNymUOXq6jZtXgVxyqR0djk9Ej64Re60hrNhGvE7jkQPp5rOkLm/YNacyXnDt4c0"
+
+# Kernel configuration
+[customizations.kernel]
+name = "kernel"
+
+# Services to enable
+[customizations.services]
+enabled = ["gdm", "NetworkManager", "fips-firstboot"]
+
+# Timezone configuration  
+[customizations.timezone]
+timezone = "America/New_York"
+ntpservers = ["pool.ntp.org"]
+
+# Locale configuration
+[customizations.locale]
+languages = ["en_US.UTF-8"]
+keyboard = "us"
+
+# Firewall configuration
+[customizations.firewall]
+ports = ["22:tcp", "80:tcp", "443:tcp"]
+
+# Custom partitioning scheme - matches your LVM setup
+[[customizations.filesystem]]
+mountpoint = "/boot/efi"
+size = 750
+fstype = "efi"
+
+[[customizations.filesystem]]  
+mountpoint = "/boot"
+size = 750
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/"
+size = 80000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/home"
+size = 5000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/tmp"
+size = 15000
+fstype = "xfs"
+mount_options = "nodev,nosuid,noexec"
+
+[[customizations.filesystem]]
+mountpoint = "/var"
+size = 15000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/var/log" 
+size = 15000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/var/log/audit"
+size = 15000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "/var/tmp"
+size = 2048
+fstype = "xfs"
+mount_options = "nodev,nosuid,noexec"
+
+[[customizations.filesystem]]
+mountpoint = "/opt"
+size = 15000
+fstype = "xfs"
+
+[[customizations.filesystem]]
+mountpoint = "swap"
+size = 8192
+fstype = "swap"
+
+# Installation configuration
+[customizations.installer]
+unattended = true
+sudo_nopasswd = ["wheel"]

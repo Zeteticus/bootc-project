@@ -1,10 +1,13 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
 # Set labels for the image
-LABEL name="rhel9-bootc-stig-v1.5" \
-      version="1.5" \
+LABEL name="rhel9-bootc-stig-v1.1" \
+      version="1.0" \
       description="RHEL 9 bootc image with STIG security hardening" \
       maintainer="mark.dotson.5@us.af.mil"
+
+RUN dnf install -y dracut-fips fips-mode-setup
+RUN fips-mode-setup --enable --no-bootcfg
 
 # Install OpenSCAP and security-related packages
 # Subscription credentials mounted as volumes during build
@@ -387,4 +390,4 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 # Add metadata for bootc
-LABEL io.containers.bootc.version="1.5"
+LABEL io.containers.bootc.version="1.1"

@@ -1,13 +1,27 @@
 # RHEL 10 Desktop Workstation Bootc Image
 FROM registry.redhat.io/rhel10/rhel-bootc:latest
 
-# Enable fips=1 kernel argument: https://bootc-dev.github.io/bootc/building/kernel-arguments.html
-#COPY 01-fips.toml /usr/lib/bootc/kargs.d/
-# Install and enable the FIPS crypto policy
-#RUN dnf install -y crypto-policies-scripts && update-crypto-policies --no-reload --set FIPS
+# Install required FIPS packages
+RUN dnf install -y \
+    dracut-fips \
+    dracut-fips-aesni \
+    grubby \
+    && dnf clean all
 
-# Set environment variables
-ENV BOOTC_IMAGE=true
+# Copy FIPS configuration files
+COPY files/fips-firstboot.service /etc/systemd/system/
+COPY files/fips-firstboot.sh /usr/local/bin/
+COPY files/fips-check.sh /usr/local/bin/
+
+# Set permissions
+RUN chmod +x /usr/local/bin/fips-firstboot.sh \
+    && chmod +x /usr/local/bin/fips-check.sh
+
+# Enable the first-boot service
+RUN systemctl enable fips-firstboot.service
+
+# Add a note for documentation
+RUN echo "FIPS packages installed. FIPS mode will be enabled on first boot." > /etc/motd.d/fips-notice
 
 # Update system and install base packages
 RUN dnf update -y && \
@@ -59,7 +73,6 @@ RUN dnf update -y && \
 
 # Install additional packages that might be available
 RUN dnf install -y \
-    gnome-tweaks \
     gnome-extensions-app \
     google-noto-fonts-common \
     || echo "Some optional packages not available, continuing..."

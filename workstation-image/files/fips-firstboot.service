@@ -1,0 +1,16 @@
+[Unit]
+Description=FIPS Mode First Boot Setup for RHEL 10
+After=local-fs.target
+Before=multi-user.target
+ConditionPathExists=!/var/lib/fips-mode-enabled
+ConditionKernelCommandLine=!fips
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fips-firstboot.sh
+StandardOutput=journal
+StandardError=journal
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
