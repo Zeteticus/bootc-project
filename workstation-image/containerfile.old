@@ -1,0 +1,129 @@
+# RHEL 10 Desktop Workstation Bootc Image
+FROM registry.redhat.io/rhel10/rhel-bootc:latest
+
+# Install required FIPS packages
+RUN dnf install -y \
+    dracut-fips \
+    dracut-fips-aesni \
+    grubby \
+    && dnf clean all
+
+# Copy FIPS configuration files
+COPY files/fips-firstboot.service /etc/systemd/system/
+COPY files/fips-firstboot.sh /usr/local/bin/
+COPY files/fips-check.sh /usr/local/bin/
+
+# Set permissions
+RUN chmod +x /usr/local/bin/fips-firstboot.sh \
+    && chmod +x /usr/local/bin/fips-check.sh
+
+# Enable the first-boot service
+RUN systemctl enable fips-firstboot.service
+
+# Add a note for documentation
+RUN echo "FIPS packages installed. FIPS mode will be enabled on first boot." > /etc/motd.d/fips-notice
+
+# Update system and install base packages
+RUN dnf update -y && \
+    dnf install -y \
+    # Desktop Environment
+    @workstation-product-environment \
+    # Development tools
+    gcc \
+    gcc-c++ \
+    make \
+    cmake \
+    git \
+    vim \
+    nano \
+    # Container tools
+    podman \
+    buildah \
+    skopeo \
+    # System utilities
+    procps-ng \
+    tree \
+    wget \
+    curl \
+    rsync \
+    unzip \
+    tar \
+    # Media codecs (if available in repos)
+    gstreamer1-plugins-base \
+    gstreamer1-plugins-good \
+    # Network tools
+    NetworkManager-wifi \
+    iw \
+    # Hardware support
+    mesa-dri-drivers \
+    # Fonts
+    liberation-fonts \
+    # Python development
+    python3 \
+    python3-pip \
+    python3-devel \
+    # Security tools
+    aide \
+    audit \
+    scap-security-guide \
+    openscap-scanner \
+    openscap \
+    openscap-utils \
+    && dnf clean all
+
+# Install additional packages that might be available
+RUN dnf install -y \
+    gnome-extensions-app \
+    google-noto-fonts-common \
+    || echo "Some optional packages not available, continuing..."
+
+# Create a STIG admin user (since root login will be disabled)
+RUN useradd -m -G wheel ascensus && \
+    mkdir -p /var/home/ascensus/.ssh && \
+    chmod 700 /var/home/ascensus/.ssh && \
+    chown ascensus:ascensus /var/home/ascensus/.ssh
+
+RUN dnf --nogpgcheck -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf clean all -y
+RUN /usr/bin/crb enable
+
+# Set root password
+RUN echo 'root:password' | chpasswd
+
+# Enable services
+RUN systemctl enable gdm && \
+    systemctl enable NetworkManager
+
+# Configure sudoers for wheel group
+RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/wheel
+
+# Set up flatpak support
+RUN flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+# Create directories and add custom configurations if they exist
+RUN umask 022 && mkdir -p /usr/local/bin
+RUN chmod 775 /usr/local/bin
+
+# Copy custom scripts if they exist (commented out - uncomment if you have scripts)
+#COPY --chmod=0755 scripts/apply-stig.sh /usr/local/bin/
+#COPY --chmod=0644 config/ /etc/
+
+# Set default target to graphical
+RUN systemctl set-default graphical.target
+
+# Bootc specific optimizations
+RUN rpm-ostree cleanup -m && \
+    ostree container commit
+
+# Copy and install the systemd service
+COPY systemd/stig-firstboot.service /etc/systemd/system/
+COPY scripts/apply-stig.sh /usr/local/bin/apply-stig.sh
+#RUN chmod +x /usr/local/bin/apply-stig.sh && \
+#    systemctl enable stig-firstboot.service
+
+# Labels for the image
+LABEL name="rhel10-desktop-workstation" \
+      version="1.0" \
+      description="RHEL 10 Desktop Workstation with development tools" \
+      io.opencontainers.image.title="RHEL 10 Desktop Workstation Bootc" \
+      io.opencontainers.image.description="A RHEL 10 based desktop workstation image for bootc" \
+      io.opencontainers.image.vendor="Custom Build"
